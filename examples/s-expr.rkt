@@ -3,15 +3,15 @@
 (provide (all-defined-out))
 
 ;; Grammar
-;; s-expr  ::= s-atom
-;;           | s-string
-;;           | s-number
-;;           | s-list
-;;           | s-quote
-;;           | s-dotted-list
-;; s-list  ::= (s-expr*)
-;; s-quote ::= 's-expr
-;; s-dotted-list :: = (s-expr+ . s-expr)
+;; s-expr             ::= s-atom
+;;                      | s-string
+;;                      | s-number
+;;                      | s-list
+;;                      | s-quote
+;;                      | s-dotted-list
+;; s-list             ::= (s-expr*)
+;; s-quote            ::= 's-expr
+;; s-dotted-list      ::= (s-expr+ . s-expr)
 
 ;; Delimited sequence
 (define (try-s-symbol-char)

@@ -18,7 +18,6 @@
 ;;                      | s-list
 ;;                      | s-dotted-list
 ;;                      | s-vector
-
 ;; s-symbol           ::= e.g. xyz
 ;; s-string           ::= e.g. "xyz"
 ;; s-integer          ::= e.g. 123 | -123 | #d123 | #xAB | #o67 | #b10101
@@ -32,8 +31,8 @@
 ;; s-unquote          ::= ,s-expr
 ;; s-unquote-splicing ::= ,@s-expr
 ;; s-list             ::= (s-expr*)
-;; s-dotted-list      :: = (s-expr+ . s-expr)
-;; s-vector           :: = #(s-expr*)
+;; s-dotted-list      ::= (s-expr+ . s-expr)
+;; s-vector           ::= #(s-expr*)
 
 ;; Delimited sequence
 (define (try-s-symbol-char)
