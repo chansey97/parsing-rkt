@@ -294,7 +294,7 @@
      (check-equal? (parse-test try-s-string (string->list "\" abc asd asd ''' dg \"")) '(#t " abc asd asd ''' dg " ()))
 
      (check-equal? (parse-test try-s-integer (string->list "100")) '(#t 100 ()))
-     ;; (check-equal? (parse-test try-s-integer (string->list "-99")) '(#t -99 ()))
+     (check-equal? (parse-test try-s-integer (string->list "-99")) '(#t -99 ()))
      
      (check-equal? (parse-test try-token-s-integer '(#\1 #\space #\2 #\space #\3 #\))) '(#t 1 (#\2 #\space #\3 #\))))
      (check-equal? (parse-test try-s-list (string->list "(1 2 3)")) '(#t (1 2 3) ()))
