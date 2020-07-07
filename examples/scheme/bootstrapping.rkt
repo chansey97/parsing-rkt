@@ -1,10 +1,10 @@
 #lang racket
 (require "../../parsing.rkt")
-(require "./scheme.rkt")
+(require "./parser.rkt")
 (require racket/pretty)
 
 (define string-of-scheme-rkt
-  (string-replace (file->string "./scheme.rkt") "#lang racket" ""))
+  (string-replace (file->string "./parser.rkt") "#lang racket" ""))
 
 (define (bootstrapping)
   (define (bootstrapping-loop inp)
