@@ -41,7 +41,6 @@
 
 (module+ test
   (require rackunit rackunit/text-ui)
-  (require syntax/parse/define)
 
   (define (eval str)
     (printf "eval ~v\n" str)

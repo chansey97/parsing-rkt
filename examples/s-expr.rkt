@@ -118,7 +118,6 @@
 ;; Tests
 (module+ test
   (require rackunit rackunit/text-ui)
-  (require syntax/parse/define)
 
   (define (parse-test try-proc inp [junk? #f])
     (with-handlers ([exn:fail:parsing?
