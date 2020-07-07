@@ -126,17 +126,6 @@
 ;; Tests
 (module+ test
   (require rackunit rackunit/text-ui)
-  (require syntax/parse/define)
-
-  (define-syntax-parser match?
-    [(match? pattern:expr subject:expr)
-     #'(match subject
-         [pattern #t]
-         [_ #f])]
-    [(match? pattern:expr)
-     #'(match-lambda
-         [pattern #t]
-         [_ #f])])
 
   (define (parse-test try-proc inp)
     (with-handlers ([exn:fail:parsing?
