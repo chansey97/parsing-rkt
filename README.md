@@ -18,4 +18,4 @@ This repository contains the following stuff.
 
 See examples and tests in code.
 
-Keep in mind, use `let*` for sequence and `try-choice` for non-deterministic choice.
+Keep in mind, use `let*` for sequence and `try-choice` for choice.
