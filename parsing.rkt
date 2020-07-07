@@ -26,16 +26,12 @@
   (raise (exn:fail:parsing "try-empty" (current-continuation-marks))))
 
 (define (try-choice try-p try-q . rest-of-tries)
-  ;; (printf "try-choice enter unconsumed-inp = ~v\n" unconsumed-inp)
   (let ((saved-inp unconsumed-inp))
     (with-handlers ([exn:fail:parsing?
                      (lambda (exn)
-                       ;; (printf "try-choice try-p failed where try-p = ~v\n" try-p)
-                       ;; (printf "try-choice try-p failed saved-inp = ~v\n" saved-inp)
                        (set! unconsumed-inp saved-inp)
                        (match rest-of-tries
                          [(list) (try-q)]
-                         ;; [(list x xs ...) (try-choice try-q x xs)]
                          [(list x xs ...) (apply try-choice (cons try-q (cons x xs)))]
                          ))])
       (try-p))))

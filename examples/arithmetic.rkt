@@ -13,7 +13,6 @@
   (try-token try-nat))
 
 (define (try-expr)
-  ;; (printf "try-expr ~v\n" get-unconsumed-inp)
   (let ((t (try-term)))
     (try-choice
      (thunk
