@@ -55,13 +55,20 @@
 (define (try-none-of cs)
   (try-sat (λ (c) (not (member c cs)))))
 
+;; try-not-followed-by only succeeds when try-x fails.
+;; It won't consume any input, if success
 (define (try-not-followed-by try-x)
-  (try-choice
-   (thunk
-    (let ((saved-inp unconsumed-inp)
-          (_ (try-x)))
-      (set! unconsumed-inp saved-inp)))
-   (thunk 'not-followed)))
+  (let* ((saved-inp unconsumed-inp)
+         (r (with-handlers ([exn:fail:parsing?
+                             (lambda (exn)
+                               (set! unconsumed-inp saved-inp)
+                               'not-followed
+                               )])
+              (try-x))))
+
+    (if (equal? r 'not-followed)
+        r
+        (raise (exn:fail:parsing "try-followed-by" (current-continuation-marks))))))
 
 (define (try-option x try-x)
   (try-choice
@@ -232,7 +239,17 @@
        (check-equal? (parse-test try-nats (string->list " [1, 2, 3]")) '(#t (1 2 3) ()))
        (check-equal? (parse-test try-nats (string->list "[1,2,]")) '(#f (#\])))
        )
+
+     
+     (check-equal? (parse-test (thunk (try-not-followed-by
+                                       (thunk (try-char #\a)))) (string->list "a")) '(#f ()))
+
+     (check-equal? (parse-test (thunk (try-not-followed-by
+                                       (thunk (try-char #\a)))) (string->list "1")) '(#t not-followed (#\1)))
+
+
      ))
 
   (run-tests parsing-tests)
+
   )
