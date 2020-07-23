@@ -18,4 +18,4 @@ This repository contains the following stuff.
 
 See examples and tests in code.
 
-Keep in mind, use `let*` for sequence and `try-choice` for choice.
+Keep in mind, use `let*` for sequence, `try-choice` for choice and `try-not-followed-by` for checking follow-set.
