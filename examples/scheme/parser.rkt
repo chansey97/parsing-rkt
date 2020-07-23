@@ -71,7 +71,8 @@
 
 (define (try-s-int)
   (let ((sign (try-s-sign))
-        (xs (try-some try-digit)))
+        (xs (try-some try-digit))
+        (_ (try-not-followed-by (thunk (try-choice try-letter try-s-symbol-char)))))
     (string->number (list->string (cons sign xs)))))
 
 (define (try-s-int/base)
@@ -87,17 +88,19 @@
    try-s-int/base))
 
 (define (try-s-floating)
-  (let ((sign (try-s-sign))
-        (x (try-some try-digit))
-        (_ (try-char #\.))
-        (y (try-some try-digit)))
+  (let* ((sign (try-s-sign))
+         (x (try-some try-digit))
+         (_ (try-char #\.))
+         (y (try-some try-digit))
+         (_ (try-not-followed-by (thunk (try-choice try-letter try-s-symbol-char)))))
     (string->number (list->string (append (list sign) x (list #\.) y)))))
 
 (define (try-s-rational)
-  (let ((sign (try-s-sign))
-        (x (try-some try-digit))
-        (_ (try-char #\/))
-        (y (try-some try-digit)))
+  (let* ((sign (try-s-sign))
+         (x (try-some try-digit))
+         (_ (try-char #\/))
+         (y (try-some try-digit))
+         (_ (try-not-followed-by (thunk (try-choice try-letter try-s-symbol-char)))))
     (string->number (list->string (append (list sign) x (list #\/) y)))))
 
 (define (try-s-complex)
@@ -117,15 +120,18 @@
                           (y (try-some try-digit)))
                       (append x (list #\.) y)))
              (thunk (try-some try-digit))))
-         (_ (try-char #\i)))
+         (_ (try-char #\i))
+         (_ (try-not-followed-by (thunk (try-choice try-letter try-s-symbol-char)))))
     (string->number (list->string (append (list sign1) r (list sign2) i (list #\i))))))
 
 (define (try-s-bool)
   (let* ((_ (try-char #\#)) )
     (try-choice
-     (thunk (let ((_ (try-char #\t)))
+     (thunk (let* ((_ (try-char #\t))
+                   (_ (try-not-followed-by (thunk (try-choice try-digit try-letter try-s-symbol-char)))))
               #t))
-     (thunk (let ((_ (try-char #\f)))
+     (thunk (let* ((_ (try-char #\f))
+                   (_ (try-not-followed-by (thunk (try-choice try-digit try-letter try-s-symbol-char)))))
               #f)))))
 
 (define (try-s-char)
@@ -357,12 +363,12 @@
      (check-equal? (parse-test try-s-string (string->list "\" \\\\ \"")) '(#t " \\ " ())) ; this is right
 
      
-     (check-equal?(parse-test try-s-integer (string->list "123")) '(#t 123 ()))
-     (check-equal?(parse-test try-s-integer (string->list "-123")) '(#t -123 ()))
+     (check-equal? (parse-test try-s-integer (string->list "123")) '(#t 123 ()))
+     (check-equal? (parse-test try-s-integer (string->list "-123")) '(#t -123 ()))
      
-     (check-equal?(parse-test try-s-integer (string->list "#d123")) '(#t 123 ()))
-     (check-equal?(parse-test try-s-integer (string->list "#xAB")) '(#t 171 ()))
-     (check-equal?(parse-test try-s-integer (string->list "#o127")) '(#t 87 ()))
+     (check-equal? (parse-test try-s-integer (string->list "#d123")) '(#t 123 ()))
+     (check-equal? (parse-test try-s-integer (string->list "#xAB")) '(#t 171 ()))
+     (check-equal? (parse-test try-s-integer (string->list "#o127")) '(#t 87 ()))
      (check-equal? (parse-test try-s-integer (string->list "#b101010")) '(#t 42 ()))
      (check-equal? (parse-test try-s-integer (string->list "#xAB")) '(#t 171 ()))
 
@@ -404,10 +410,47 @@
 
      (check-equal? (parse-test try-s-vector (string->list "#(1 2 3)")) '(#t #(1 2 3) ()))
 
+
+     ;; NOTE:
+     ;; In Scheme, 123a is a correct symbol, but here is not.
+     ;; This because I suppose all symbols start from a letter
+     ;; see (first (try-choice try-letter try-s-symbol-char)) in try-s-symbol
+
+     ;; Due to this reason, other atoms (e.g. bool, integer, floating, etc) need check follow-set
+     ;; see the usage of try-not-followed-by.
+
+     ;; Technically speaking, my implementation is much harder than Scheme’s default implementation, because I checked follow-set.
+     ;; I can do the same as the Scheme, but I don't do that now, because I want to demonstrate how to check follow-set in parser combinator.
+
+     ;; TODO:
+     ;; 1. Do the same as the Scheme
+     ;; 2. Move the demonstration of follow-set to s-expr.rkt.
+     
+     (check-equal? (parse-test try-s-bool (string->list "#t1")) '(#f (#\1)))
+     (check-equal? (parse-test try-s-bool (string->list "#f1")) '(#f ()))
+     
+     (check-equal? (parse-test try-s-integer (string->list "123a")) '(#f (#\2 #\3 #\a)))
+     (check-equal? (parse-test try-s-integer (string->list "-123a")) '(#f (#\1 #\2 #\3 #\a)))
+     
+     (check-equal? (parse-test try-s-floating (string->list "1.23a")) '(#f ()))
+     (check-equal? (parse-test try-s-floating (string->list "+1.23a")) '(#f ()))
+     (check-equal? (parse-test try-s-floating (string->list "-1.23a")) '(#f ()))
+     (check-equal? (parse-test try-s-rational (string->list "1/2a")) '(#f ()))
+     (check-equal? (parse-test try-s-rational (string->list "+1/2a")) '(#f ()))
+     (check-equal? (parse-test try-s-rational (string->list "-1/2a")) '(#f ()))
+     (check-equal? (parse-test try-s-complex (string->list "2.5+0.0ia")) '(#f ()))
+     (check-equal? (parse-test try-s-complex (string->list "+2.5+0.0ia")) '(#f ()))
+     (check-equal? (parse-test try-s-complex (string->list "-2.5-0.0ia")) '(#f ()))
+
+
+     (check-equal? (parse-test try-s-expr (string->list "(123a 456)")) '(#f (#\1 #\2 #\3 #\a #\space #\4 #\5 #\6 #\))))
+     (check-equal? (parse-test try-s-expr (string->list "(123 456)")) '(#t (123 456) ()))
+
      
      ))
   
   (run-tests parsing-tests)
+
   )
 
 
