@@ -36,6 +36,22 @@
                          ))])
       (try-p))))
 
+;; Checking follow-set
+;; try-not-followed-by only succeeds when try-x fails.
+;; It won't consume any input, if success
+(define (try-not-followed-by try-x)
+  (let* ((saved-inp unconsumed-inp)
+         (r (with-handlers ([exn:fail:parsing?
+                             (lambda (exn)
+                               (set! unconsumed-inp saved-inp)
+                               'not-followed
+                               )])
+              (try-x))))
+
+    (if (equal? r 'not-followed)
+        r
+        (raise (exn:fail:parsing "try-followed-by" (current-continuation-marks))))))
+
 ;; Derived primitives
 (define (try-sat p?)
   (let ((x (try-item)))
@@ -54,21 +70,6 @@
 
 (define (try-none-of cs)
   (try-sat (λ (c) (not (member c cs)))))
-
-;; try-not-followed-by only succeeds when try-x fails.
-;; It won't consume any input, if success
-(define (try-not-followed-by try-x)
-  (let* ((saved-inp unconsumed-inp)
-         (r (with-handlers ([exn:fail:parsing?
-                             (lambda (exn)
-                               (set! unconsumed-inp saved-inp)
-                               'not-followed
-                               )])
-              (try-x))))
-
-    (if (equal? r 'not-followed)
-        r
-        (raise (exn:fail:parsing "try-followed-by" (current-continuation-marks))))))
 
 (define (try-option x try-x)
   (try-choice
