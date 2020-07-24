@@ -44,8 +44,16 @@
          (_ (try-char #\")))
     (list->string x)))
 
+(define (try-s-sign)
+  (try-option #\+ (thunk (try-choice
+                          (thunk (try-char #\+))
+                          (thunk (try-char #\-))))))
+
 (define (try-s-number)
-  (try-int))
+  (let ((sign (try-s-sign))
+        (xs (try-some try-digit))
+        (_ (try-not-followed-by (thunk (try-choice try-letter try-s-symbol-char)))))
+    (string->number (list->string (cons sign xs)))))
 
 ;; Spacing and comments
 (define (try-comment)
@@ -133,7 +141,11 @@
 
      (check-equal? (parse-test try-s-atom (string->list "#t")) '(#t #t ()))
      (check-equal? (parse-test try-s-atom (string->list "#f")) '(#t #f ()))
+
+     ;; FIXME: I don't know what's the meaning of |#xxx| in Racket.
+     (check-equal? (parse-test try-s-atom (string->list "#f1")) '(#t |#f1| ()))
      (check-equal? (parse-test try-s-atom (string->list "#asd")) '(#t |#asd| ()))
+     
      (check-equal? (parse-test try-s-atom (string->list "asdsad")) '(#t asdsad ()))
 
      (check-equal? (parse-test try-s-string (string->list "\" abc asd asd ''' dg \"")) '(#t " abc asd asd ''' dg " ()))
@@ -193,6 +205,7 @@
 
      (check-equal? (parse-test try-s-expr (string->list " 2")) '(#f (#\2)))
      (check-equal? (parse-test try-s-expr (string->list " 2") #t) '(#t 2 ()))
+     (check-equal? (parse-test try-s-expr (string->list "( 1 2)") #t) '(#t (1 2) ()))
 
      (check-equal? (parse-test try-s-dotted-list (string->list "(1 . 3)")) '(#t (1 3) ()))
      (check-equal? (parse-test try-s-dotted-list (string->list "(1 . (3))")) '(#t (1 (3)) ()))
@@ -202,12 +215,34 @@
      (check-equal? (parse-test try-s-string (string->list "\" \\ \"")) '(#f (#\space #\"))) ; this should be a parse error
      (check-equal? (parse-test try-s-string (string->list "\" \\\\ \"")) '(#t " \\ " ())) ; this is right
 
+
+     ;; Testing follow-set
+     ;; For example, 123a is not a correct number (it is even not a correct symbol).
+     ;; Therefore we need check follow-set of a number
+     ;; see the usage of try-not-followed-by.
+     
+     ;; NOTE:
+     ;; In Scheme, 123a is a correct symbol, although it is not a correct number.
+     ;; This difference between Scheme and mine is due to I suppose all symbols start from a letter.
+     ;; see (first (try-choice try-letter try-s-symbol-char)) in try-s-atom
+
+     ;; I can do the same as the Scheme (just swap the order of try-token-s-atom and try-token-s-number),
+     ;; but I don't do that now, because this may cause confusion.
+
+     (check-equal? (parse-test try-s-number (string->list "123a")) '(#f ()))
+     (check-equal? (parse-test try-s-number (string->list "-123a")) '(#f ()))
+     
+     (check-equal? (parse-test try-s-expr (string->list "(123 456)")) '(#t (123 456) ()))
+     (check-equal? (parse-test try-s-expr (string->list "(123a 456)")) '(#f (#\2 #\3 #\a #\space #\4 #\5 #\6 #\))))
+
      ))
   
   (run-tests parsing-tests)
 
+  
 
-
+  
+  
   )
 
 
