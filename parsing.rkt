@@ -25,6 +25,8 @@
 (define (try-empty)
   (raise (exn:fail:parsing "try-empty" (current-continuation-marks))))
 
+;; Note that if the last try-x fails, the last try-x will consume input (it makes debugging easier)
+;; If you don't want to consume, manually add a try-empty at the last
 (define (try-choice try-p try-q . rest-of-tries)
   (let ((saved-inp unconsumed-inp))
     (with-handlers ([exn:fail:parsing?
