@@ -410,21 +410,13 @@
 
      (check-equal? (parse-test try-s-vector (string->list "#(1 2 3)")) '(#t #(1 2 3) ()))
 
-
-     ;; NOTE:
-     ;; In Scheme, 123a is a correct symbol, but here is not.
-     ;; This because I suppose all symbols start from a letter
-     ;; see (first (try-choice try-letter try-s-symbol-char)) in try-s-symbol
-
-     ;; Due to this reason, other atoms (e.g. bool, integer, floating, etc) need check follow-set
+     ;; Testing follow-set
+     ;; For example, 123a is not a correct number (it is even not a correct symbol).
+     ;; Therefore we need check follow-set of a number
      ;; see the usage of try-not-followed-by.
-
-     ;; Technically speaking, my implementation is much harder than Scheme’s default implementation, because I checked follow-set.
-     ;; I can do the same as the Scheme, but I don't do that now, because I want to demonstrate how to check follow-set in parser combinator.
-
-     ;; TODO:
-     ;; 1. Do the same as the Scheme
-     ;; 2. Move the demonstration of follow-set to s-expr.rkt.
+     
+     ;; NOTE:
+     ;; As s-expr.rkt, I do not make the parser parse 123a as a symbol.
      
      (check-equal? (parse-test try-s-bool (string->list "#t1")) '(#f (#\1)))
      (check-equal? (parse-test try-s-bool (string->list "#f1")) '(#f ()))
