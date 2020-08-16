@@ -29,8 +29,8 @@ Keep in mind, use `let*` for sequence, `try-choice` for choice and `try-not-foll
 
 1. Not support non-backtracking behaviour, e.g. `<|>` in `parsec`.
 
-   Therefore, it may have some performance issue and in some case it may not be able to give you precise error reports.
+   Consequently, it may have some performance issue and in some case it may not give you precise error reports.
 
-2. Not support merge error, e,g. `mergeError` in `parsec`. 
+2. Not support merge error, e.g. `mergeError` in `parsec`. 
 
-   Therefore, it may not be able to give you precise error reports.
+   Consequently, it may not give you precise error reports when input string is illegal.
