@@ -1,5 +1,5 @@
 # parsing-rkt
-A backtracking parser combinator for Racket
+A toy backtracking parser combinator for Racket
 
 
 
